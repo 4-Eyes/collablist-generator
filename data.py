@@ -21,7 +21,6 @@ class Collaborator:
         self.lastfmNetwork = pylast.LastFMNetwork(api_key=lastfmConfig['lastfmAPIKey'],
                                                   api_secret=lastfmConfig['lastfmAPISecret'])
         self.lastfmUser = self.lastfmNetwork.get_user(self.lastfmUsername)
-        y = [x for x in self.lastfmUser.get_loved_tracks() if x.]
         self.lastfmUserLibrary = self.lastfmUser.get_library()
 
         # todo: setup up getting spotify user/library
