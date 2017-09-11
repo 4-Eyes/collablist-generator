@@ -50,18 +50,12 @@ class Collaborator:
         search_results = self.spotify.search(q=track.title + " artist:" + track.artist.name, type='track')
         # filter search results logically and then return a tuple of if it's valid and the id of the track on spotify
         sr_len = len(search_results['tracks']['items'])
-        print("Original   - Song Name: {0} Artist: {1}".format(track.title, track.artist.name))
 
         if sr_len == 1:
-            print("Top result - Song Name: {0} Artist: {1}".format(search_results['tracks']['items'][0]['name'],
-                                                                   search_results['tracks']['items'][0]['artists'][0]
-                                                                   ['name']))
             return True, search_results['tracks']['items'][0]['id']
         for result in search_results['tracks']['items']:
             if len([x for x in result['artists'] if track.artist.name.lower() in x['name'].lower()]) > 0:
-                print("Top result - Song Name: {0} Artist: {1}".format(result['name'], result['artists'][0]['name']))
                 return True, result['id']
-        print(search_results)
         return False, None
 
     def get_last_week_tracks(self, max_no_tracks=30, minimum_track_play_count=3, minimum_artist_play_count=10,
@@ -85,7 +79,6 @@ class Collaborator:
         # shuffled all tracks and return the as many tracks as possible
         shuffled_tracks = top_tracks + loved_tracks + top_artist_tracks
         shuffle(shuffled_tracks)
-        print(len(shuffled_tracks))
         used_artists = {}
         while len(tracks) < max_no_tracks and len(shuffled_tracks) > 0:
             track_to_add = shuffled_tracks.pop()
@@ -96,10 +89,8 @@ class Collaborator:
                 # if the track is valid stick the spotify id on the object and add it to the tracks
                 track_to_add.spotify_id = spotify_id
                 tracks.add(track_to_add)
-        print(len(tracks))
-        print(print(tracks))
         return tracks
 
-
-c = Collaborator('BlueImbecile', 'jamesaf@clear.net.nz')
-tracks = c.get_last_week_tracks(100, 1, 4)
+# uncomment for testing
+# c = Collaborator() # fill in the usernames here
+# tracks = c.get_last_week_tracks(100, 1, 4)
