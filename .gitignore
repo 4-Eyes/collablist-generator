@@ -4,3 +4,7 @@ collablist-generator\.iml
 \.idea/
 
 apis\.config
+
+__pycache__/
+
+*.nz

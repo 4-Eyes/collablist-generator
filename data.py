@@ -49,22 +49,30 @@ class Collaborator:
         # todo: enable reauthorising here if necessary
         search_results = self.spotify.search(q=track.title + " artist:" + track.artist.name, type='track')
         # filter search results logically and then return a tuple of if it's valid and the id of the track on spotify
-        sr_len = len(search_results)
-        if sr_len == 0:
-            return False, None
+        sr_len = len(search_results['tracks']['items'])
+        print("Original   - Song Name: {0} Artist: {1}".format(track.title, track.artist.name))
+
         if sr_len == 1:
+            print("Top result - Song Name: {0} Artist: {1}".format(search_results['tracks']['items'][0]['name'],
+                                                                   search_results['tracks']['items'][0]['artists'][0]
+                                                                   ['name']))
             return True, search_results['tracks']['items'][0]['id']
-        # todo: this should be tidied up and decide what to do with multiple results
+        for result in search_results['tracks']['items']:
+            if len([x for x in result['artists'] if track.artist.name.lower() in x['name'].lower()]) > 0:
+                print("Top result - Song Name: {0} Artist: {1}".format(result['name'], result['artists'][0]['name']))
+                return True, result['id']
+        print(search_results)
+        return False, None
 
     def get_last_week_tracks(self, max_no_tracks=30, minimum_track_play_count=3, minimum_artist_play_count=10,
                              max_artist_top_tracks=2):
         tracks = set()
         # get the top tracks for the week
-        top_tracks = [t.item for t in self.lastfmUser.get_top_tracks(period=pylast.PERIOD_7DAYS)
-                      if t.weight >= minimum_track_play_count]
+        top_tracks = [t.item for t in self.lastfmUser.get_top_tracks(period=pylast.PERIOD_7DAYS, limit=150)
+                      if int(t.weight) >= minimum_track_play_count]
         # get the top artists for the week
-        top_artists = [a.item for a in self.lastfmUser.get_top_artists(period=pylast.PERIOD_7DAYS)
-                       if a.weight >= minimum_artist_play_count]
+        top_artists = [a.item for a in self.lastfmUser.get_top_artists(period=pylast.PERIOD_7DAYS, limit=50)
+                       if int(a.weight) >= minimum_artist_play_count]
         # grab some tracks from the top played artist
         top_artist_tracks = []
         for artist in top_artists:
@@ -75,13 +83,23 @@ class Collaborator:
         loved_tracks = [x.track for x in self.lastfmUser.get_loved_tracks() if float(x.timestamp) > seven_days_ago]
 
         # shuffled all tracks and return the as many tracks as possible
-        shuffled_tracks = shuffle(top_tracks + loved_tracks + top_artist_tracks)
+        shuffled_tracks = top_tracks + loved_tracks + top_artist_tracks
+        shuffle(shuffled_tracks)
+        print(len(shuffled_tracks))
+        used_artists = {}
         while len(tracks) < max_no_tracks and len(shuffled_tracks) > 0:
             track_to_add = shuffled_tracks.pop()
             # check the track is valid
             valid, spotify_id = self._valid_spotify_track(track_to_add)
-            if valid:
+            if valid and track_to_add.artist.name not in used_artists:
+                used_artists[track_to_add.artist.name] = True
                 # if the track is valid stick the spotify id on the object and add it to the tracks
                 track_to_add.spotify_id = spotify_id
                 tracks.add(track_to_add)
+        print(len(tracks))
+        print(print(tracks))
         return tracks
+
+
+c = Collaborator('BlueImbecile', 'jamesaf@clear.net.nz')
+tracks = c.get_last_week_tracks(100, 1, 4)
