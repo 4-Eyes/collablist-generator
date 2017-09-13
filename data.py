@@ -17,6 +17,7 @@ class Collaborator:
         self.spotify = spotify_api
         self.spotifyToken = None
         self.spotifyScopes = spotify_scopes
+        self.spotifyUser = spotify_api.current_user() if spotify_api is not None else None
         self._prepare_collaborator()
 
     def _prepare_collaborator(self):
@@ -90,6 +91,13 @@ class Collaborator:
                 track_to_add.spotify_id = spotify_id
                 tracks.add(track_to_add)
         return tracks
+
+    def create_new_playlist(self, playlist_name, public=False, collaborative=True):
+        new_playlist = self.spotify.user_playlist_create(self.spotifyUser['id'], playlist_name, public)
+        if collaborative:
+            self.spotify.user_playlist_change_details(self.spotifyUser['id'], new_playlist['id'],
+                                                      collaborative=collaborative)
+        return new_playlist['id']
 
 # uncomment for testing
 # c = Collaborator() # fill in the usernames here
