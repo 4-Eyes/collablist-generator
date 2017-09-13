@@ -8,3 +8,5 @@ apis\.config
 __pycache__/
 
 *.nz
+
+\.vs/

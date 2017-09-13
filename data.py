@@ -8,7 +8,7 @@ from random import shuffle
 
 
 class Collaborator:
-    def __init__(self, lastfm_username, spotify_username=None, spotify_api=None, spotify_scopes='user-library-read'):
+    def __init__(self, lastfm_username, spotify_username=None, spotify_api=None, spotify_scopes='playlist-read-private playlist-modify-private playlist-modify-public playlist-read-collaborative user-library-read'):
         self.lastfmUsername = lastfm_username
         self.spotifyUsername = spotify_username
         self.lastfmNetwork = None
@@ -38,6 +38,7 @@ class Collaborator:
                                                                        spotify_config['spotifyClientSecret'],
                                                                        spotify_config['redirectURI'])
                 self.spotify = spotipy.Spotify(auth=self.spotifyToken)
+                self.spotifyUser = self.spotify.current_user()
             except SpotifyOauthError:
                 print("Failed to set up spotify user")
 
@@ -98,6 +99,9 @@ class Collaborator:
             self.spotify.user_playlist_change_details(self.spotifyUser['id'], new_playlist['id'],
                                                       collaborative=collaborative)
         return new_playlist['id']
+
+    def add_songs_to_playlist(self, playlist_id, songs):
+        self.spotify.user_playlist_add_tracks(self.spotifyUser['id'], playlist_id, songs)
 
 # uncomment for testing
 # c = Collaborator() # fill in the usernames here
