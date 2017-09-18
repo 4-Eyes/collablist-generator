@@ -61,18 +61,20 @@ class Collaborator:
         return False, None
 
     def get_last_week_tracks(self, max_no_tracks=30, minimum_track_play_count=3, minimum_artist_play_count=10,
-                             max_artist_top_tracks=2):
+                             max_artist_top_tracks=2, max_top_tracks=150, max_top_artists=50):
         tracks = set()
         # get the top tracks for the week
-        top_tracks = [t.item for t in self.lastfmUser.get_top_tracks(period=pylast.PERIOD_7DAYS, limit=150)
+        top_tracks = [t.item for t in self.lastfmUser.get_top_tracks(period=pylast.PERIOD_7DAYS, limit=max_top_tracks)
                       if int(t.weight) >= minimum_track_play_count]
         # get the top artists for the week
-        top_artists = [a.item for a in self.lastfmUser.get_top_artists(period=pylast.PERIOD_7DAYS, limit=50)
+        top_artists = [a.item for a in self.lastfmUser.get_top_artists(period=pylast.PERIOD_7DAYS, limit=max_top_artists)
                        if int(a.weight) >= minimum_artist_play_count]
         # grab some tracks from the top played artist
         top_artist_tracks = []
         for artist in top_artists:
-            top_artist_tracks += [t.item for t in artist.get_top_tracks()[:max_artist_top_tracks]]
+            att = artist.get_top_tracks()
+            shuffle(att)
+            top_artist_tracks += [t.item for t in att[:max_artist_top_tracks]]
 
         # get tracks loved within the last week
         seven_days_ago = datetime.datetime.now().timestamp() - 7 * 24 * 60 * 60
