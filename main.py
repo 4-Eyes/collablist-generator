@@ -1,5 +1,5 @@
 from data import Collaborator
-from random import shuffle
+from random import shuffle, sample
 import sys
 import argparse
 
@@ -14,12 +14,18 @@ def run(args):
         print("loading the {0}{1} collaborator's data...".format(i + 2, {2: "nd", 3: "rd"}.get(i+2, "th")))
         c = Collaborator(collaborator, spotify_api=primary_collaborator.spotify)
         songs = songs | c.get_last_week_tracks(100, 2, 4, 2)
+    # get some recommendations
+    recommended_ids = set()
+    for i in range(5):
+        seed_ids = [song.spotify_id for song in sample(songs, 5)]
+        for track in primary_collaborator.spotify.recommendations(seed_tracks=seed_ids, limit=10)['tracks']:
+            recommended_ids.add(track['id'])
     print("creating new playlist...")
     playlist_id = primary_collaborator.create_new_playlist(args.name[0])
     print("adding tracks to playlist...")
-    shuffled_ids = list(set([song.spotify_id for song in songs]))
+    shuffled_ids = list(set([song.spotify_id for song in songs]) | recommended_ids)
     shuffle(shuffled_ids)
-    primary_collaborator.add_songs_to_playlist(playlist_id, shuffled_ids[:80])
+    primary_collaborator.add_songs_to_playlist(playlist_id, shuffled_ids[:100])
     print("Finished!!!")
     sys.exit()
 
