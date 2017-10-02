@@ -16,14 +16,14 @@ def run(args):
         songs = songs | c.get_last_week_tracks(100, 2, 4, 2)
     # get some recommendations
     recommended_ids = set()
-    for i in range(5):
+    for i in range(25):
         seed_ids = [song.spotify_id for song in sample(songs, 5)]
         for track in primary_collaborator.spotify.recommendations(seed_tracks=seed_ids, limit=10)['tracks']:
             recommended_ids.add(track['id'])
     print("creating new playlist...")
     playlist_id = primary_collaborator.create_new_playlist(args.name[0])
     print("adding tracks to playlist...")
-    shuffled_ids = list(set([song.spotify_id for song in songs]) | recommended_ids)
+    shuffled_ids = list(recommended_ids) if args.allRecommended else list(set([song.spotify_id for song in songs]) | recommended_ids)
     shuffle(shuffled_ids)
     primary_collaborator.add_songs_to_playlist(playlist_id, shuffled_ids[:100])
     print("Finished!!!")
@@ -41,4 +41,5 @@ if __name__ == "__main__":
     parser.add_argument('-matt', '--maxArtistTopTracks', metavar='matt', help='the maximum number of top tracks to take from top artists when getting weekly data. Defaults to 2', type=int, default=2)
     parser.add_argument('-mtt', '--maxTopTracks', metavar='mtt', help='the maximum number of top tracks to pull from last.fm. Defaults to 150', type=int, default=150)
     parser.add_argument('-mta', '--maxTopArtists', metavar='mta', help='the maximum number of top artists to pull from last.fm. Defaults to 50', type=int, default=50)
+    parser.add_argument('-ar', '--allRecommended', metavar='ar', help='whether to create a playlist of only recommendations')
     run(parser.parse_args(sys.argv[1:]))
